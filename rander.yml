@@ -1,0 +1,24 @@
+services:
+  
+type: web
+  name: flask-todo-cicd
+  env: python
+  plan: free
+
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+
+    startCommand: |
+      /opt/render/project/src/.venv/bin/gunicorn --bind 0.0.0.0:$PORT run:app
+
+    envVars:
+      
+key: FLASK_ENV
+      value: production
+key: PYTHON_VERSION
+    value: 3.13.4
+key: PORT
+  value: 5000
+key: DATABASE_URL
+value: postgresql://postgres:postgres@db:5432/todo_dev
