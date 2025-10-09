@@ -5,7 +5,7 @@ from app import create_app, db
 @pytest.fixture()
 def app():
     """สร้าง Flask app สำหรับการทดสอบ"""
-    app = create_app('testing')
+    app = create_app("testing")
 
     with app.app_context():
         db.create_all()
