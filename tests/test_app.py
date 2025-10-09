@@ -128,7 +128,8 @@ class TestTodoAPI:
 
     def test_create_todo_with_full_data(self, client):
         """Test creating a new todo with title and description"""
-        todo_data = {"title": "Test Todo", "description": "This is a test todo"}
+        todo_data = {"title": "Test Todo",
+                     "description": "This is a test todo"}
         response = client.post("/api/todos", json=todo_data)
         assert response.status_code == 201
         data = response.get_json()
@@ -340,7 +341,8 @@ class TestTodoAPI:
     @patch("app.routes.Todo.query")
     def test_get_todos_database_error(self, mock_query, client):
         """Test database error when getting todos"""
-        mock_query.order_by.return_value.all.side_effect = SQLAlchemyError("DB Error")
+        mock_query.order_by.return_value.all.side_effect = SQLAlchemyError(
+            "DB Error")
         response = client.get("/api/todos")
         assert response.status_code == 500
         data = response.get_json()
@@ -367,7 +369,8 @@ class TestIntegration:
 
         read_response = client.get(f"/api/todos/{todo_id}")
         assert read_response.status_code == 200
-        assert read_response.get_json()["data"]["title"] == "Integration Test Todo"
+        assert read_response.get_json(
+        )["data"]["title"] == "Integration Test Todo"
 
         update_response = client.put(
             f"/api/todos/{todo_id}",
@@ -398,7 +401,8 @@ class TestIntegration:
         assert data["count"] == 5
 
         todo_id = data["data"][0]["id"]
-        response = client.put(f"/api/todos/{todo_id}", json={"completed": True})
+        response = client.put(
+            f"/api/todos/{todo_id}", json={"completed": True})
         assert response.status_code == 200
 
         response = client.delete(f"/api/todos/{todo_id}")

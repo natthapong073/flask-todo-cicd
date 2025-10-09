@@ -62,7 +62,8 @@ def create_todo():
         return jsonify({"success": False, "error": "Title is required"}), 400
 
     try:
-        todo = Todo(title=data["title"], description=data.get("description", ""))
+        todo = Todo(title=data["title"],
+                    description=data.get("description", ""))
         db.session.add(todo)
         db.session.commit()
 
