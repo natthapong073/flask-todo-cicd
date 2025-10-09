@@ -52,3 +52,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # ✅ Run with gunicorn (แบบที่ Render ใช้ได้แน่นอน)
 CMD ["python", "-m", "gunicorn", "--bind", "0.0.0.0:$PORT", "--workers", "4", "--timeout", "120", "run:app"]
+
