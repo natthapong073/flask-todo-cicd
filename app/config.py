@@ -42,8 +42,7 @@ class ProductionConfig(Config):
     def init_app(cls, app):
         Config.init_app(app)
         # Production-specific initialization
-        assert os.getenv(
-            "DATABASE_URL"), "DATABASE_URL must be set in production"
+        assert os.getenv("DATABASE_URL"), "DATABASE_URL must be set in production"
 
 
 config = {
