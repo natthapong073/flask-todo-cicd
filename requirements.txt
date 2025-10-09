@@ -1,7 +1,7 @@
 Flask==3.0.3
 Flask-SQLAlchemy==3.1.1
 gunicorn==21.2.0
-psycopg[binary]==3.2.10
+psycopg2-binary==2.9.9
 SQLAlchemy==2.0.31
 Werkzeug==3.0.4
 Jinja2==3.1.4
