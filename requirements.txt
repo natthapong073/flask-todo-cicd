@@ -16,7 +16,7 @@ psycopg2-binary==2.9.9
 # ---------------------------
 pytest==7.4.3
 pytest-cov==4.1.0
-pytest-mock==3.12.0  # สำหรับ mocking database errors ใน test
+pytest-mock==3.12.0
 
 # ---------------------------
 # Environment Management
@@ -26,5 +26,5 @@ python-dotenv==1.0.1
 # ---------------------------
 # Deployment / CI-CD
 # ---------------------------
-gunicorn==23.0.0  # อัปเดตให้เป็นเวอร์ชันล่าสุดและรองรับ Python 3.11+
-requests==2.32.3  # เพิ่มไว้สำหรับ health check ที่ใช้ requests ใน Dockerfile
+gunicorn==23.0.0
+requests==2.32.3
