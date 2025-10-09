@@ -1,33 +1,19 @@
 import pytest
 import os
-from app.config import (
-    Config,
-    DevelopmentConfig,
-    TestingConfig,
-    ProductionConfig,
-    config,
-)
+from app.config import Config, DevelopmentConfig, TestingConfig, ProductionConfig, config
 
-
-# -------------------------------------------------------------------------
-# 1️⃣ Base Configuration
-# -------------------------------------------------------------------------
 class TestConfig:
     """Test base configuration"""
 
     def test_base_config_has_secret_key(self):
         """Test base config has secret key"""
-        assert hasattr(Config, "SECRET_KEY")
+        assert hasattr(Config, 'SECRET_KEY')
         assert Config.SECRET_KEY is not None
 
     def test_sqlalchemy_track_modifications_disabled(self):
         """Test SQLAlchemy track modifications is disabled"""
         assert Config.SQLALCHEMY_TRACK_MODIFICATIONS is False
 
-
-# -------------------------------------------------------------------------
-# 2️⃣ Development Configuration
-# -------------------------------------------------------------------------
 class TestDevelopmentConfig:
     """Test development configuration"""
 
@@ -37,13 +23,9 @@ class TestDevelopmentConfig:
 
     def test_has_database_uri(self):
         """Test development config has database URI"""
-        assert hasattr(DevelopmentConfig, "SQLALCHEMY_DATABASE_URI")
+        assert hasattr(DevelopmentConfig, 'SQLALCHEMY_DATABASE_URI')
         assert DevelopmentConfig.SQLALCHEMY_DATABASE_URI is not None
 
-
-# -------------------------------------------------------------------------
-# 3️⃣ Testing Configuration
-# -------------------------------------------------------------------------
 class TestTestingConfig:
     """Test testing configuration"""
 
@@ -53,16 +35,12 @@ class TestTestingConfig:
 
     def test_uses_sqlite_memory(self):
         """Test testing uses SQLite in-memory database"""
-        assert "sqlite:///:memory:" in TestingConfig.SQLALCHEMY_DATABASE_URI
+        assert 'sqlite:///:memory:' in TestingConfig.SQLALCHEMY_DATABASE_URI
 
     def test_csrf_disabled(self):
         """Test CSRF is disabled for testing"""
         assert TestingConfig.WTF_CSRF_ENABLED is False
 
-
-# -------------------------------------------------------------------------
-# 4️⃣ Production Configuration
-# -------------------------------------------------------------------------
 class TestProductionConfig:
     """Test production configuration"""
 
@@ -72,28 +50,23 @@ class TestProductionConfig:
 
     def test_requires_database_url(self, monkeypatch):
         """Test production requires DATABASE_URL environment variable"""
-        # ลบ DATABASE_URL ถ้ามีอยู่
-        monkeypatch.delenv("DATABASE_URL", raising=False)
+        # Remove DATABASE_URL if it exists
+        monkeypatch.delenv('DATABASE_URL', raising=False)
 
         from app import create_app
-
         with pytest.raises(AssertionError):
-            _ = create_app("production")
+            app = create_app('production')
 
-
-# -------------------------------------------------------------------------
-# 5️⃣ Config Selector Dictionary
-# -------------------------------------------------------------------------
 class TestConfigSelector:
     """Test configuration selector"""
 
     def test_config_contains_all_environments(self):
         """Test config dict has all environment configurations"""
-        assert "development" in config
-        assert "testing" in config
-        assert "production" in config
-        assert "default" in config
+        assert 'development' in config
+        assert 'testing' in config
+        assert 'production' in config
+        assert 'default' in config
 
     def test_default_is_development(self):
         """Test default configuration is development"""
-        assert config["default"] == DevelopmentConfig
+        assert config['default'] == DevelopmentConfig
