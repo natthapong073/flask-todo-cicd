@@ -56,14 +56,13 @@ def get_todo(todo_id):
 @api.route("/todos", methods=["POST"])
 def create_todo():
     """Create a new todo item"""
-    data = request.get_json()
+    data = request.get_json() or {}
 
-    if not data or not data.get("title"):
+    if not data.get("title"):
         return jsonify({"success": False, "error": "Title is required"}), 400
 
     try:
-        todo = Todo(title=data["title"],
-                    description=data.get("description", ""))
+        todo = Todo(title=data["title"], description=data.get("description", ""))
         db.session.add(todo)
         db.session.commit()
 
@@ -89,7 +88,7 @@ def update_todo(todo_id):
     if not todo:
         return jsonify({"success": False, "error": "Todo not found"}), 404
 
-    data = request.get_json()
+    data = request.get_json() or {}
 
     try:
         if "title" in data:
@@ -111,9 +110,18 @@ def update_todo(todo_id):
             ),
             200,
         )
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
         db.session.rollback()
-        return jsonify({"success": False, "error": "Failed to update todo"}), 500
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Database error",
+                    "details": str(e),
+                }
+            ),
+            500,
+        )
 
 
 @api.route("/todos/<int:todo_id>", methods=["DELETE"])
