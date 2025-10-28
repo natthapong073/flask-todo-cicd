@@ -89,8 +89,8 @@ def update_todo(todo_id):
     """Update an existing todo item"""
     data = request.get_json() or {}
 
-    # ✅ ครอบ try ครบทั้ง query → commit เพื่อจับ mock error ได้ถูกต้อง
     try:
+        # ✅ ครอบ query ด้วย try เผื่อ mock commit กระทบ session
         todo = Todo.query.get(todo_id)
         if not todo:
             return jsonify({"success": False, "error": "Todo not found"}), 404
@@ -102,7 +102,7 @@ def update_todo(todo_id):
         if "completed" in data:
             todo.completed = data["completed"]
 
-        # ถ้ามี mock commit ให้ล้ม → จะโดน except ดักไว้
+        # ✅ จุดที่ test mock error
         db.session.commit()
 
         return (
@@ -117,8 +117,9 @@ def update_todo(todo_id):
         )
 
     except SQLAlchemyError:
+        # ✅ ดักได้ทุกกรณี mock commit / query ล้ม
         db.session.rollback()
-        return jsonify({"success": False, "error": "Database error occurred"}), 500
+        return jsonify({"success": False, "error": "Database error"}), 500
 
 
 @api.route("/todos/<int:todo_id>", methods=["DELETE"])
