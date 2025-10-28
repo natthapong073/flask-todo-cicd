@@ -2,24 +2,28 @@ import os
 from flask import Flask, jsonify
 from app.models import db
 from app.routes import api
-from app.config import config
+from app.config import config_map  # ✅ เปลี่ยนจาก config → config_map
 
 
 def create_app(config_name=None):
     """Application factory pattern"""
     if config_name is None:
+        # ใช้ค่าเริ่มต้นจากตัวแปรสภาพแวดล้อม
         config_name = os.getenv("FLASK_ENV", "development")
 
     app = Flask(__name__)
-    app.config.from_object(config[config_name])
-    config[config_name].init_app(app)
 
-    # Initialize extensions
+    # ✅ โหลด config จาก config_map
+    app.config.from_object(config_map[config_name])
+    config_map[config_name].init_app(app)
+
+    # ✅ เชื่อมต่อฐานข้อมูล
     db.init_app(app)
 
-    # Register blueprints
+    # ✅ Register blueprints
     app.register_blueprint(api, url_prefix="/api")
 
+    # ✅ Root endpoint
     @app.route("/")
     def index():
         return jsonify(
@@ -30,6 +34,7 @@ def create_app(config_name=None):
             }
         )
 
+    # ✅ Error Handlers
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({"success": False, "error": "Resource not found"}), 404
@@ -44,8 +49,8 @@ def create_app(config_name=None):
         db.session.rollback()
         return jsonify({"success": False, "error": "Internal server error"}), 500
 
-    # ✅ สร้างตารางเฉพาะเมื่อสั่งให้ทำ (ป้องกันการต่อ DB ตอน import)
-    if app.config.get("AUTO_CREATE_DB"):
+    # ✅ สร้างตารางเฉพาะตอนที่ไม่ใช่ testing (กัน pytest พัง)
+    if not app.config.get("TESTING", False):
         with app.app_context():
             db.create_all()
 
