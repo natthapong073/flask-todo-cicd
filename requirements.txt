@@ -1,17 +1,8 @@
-# --- Core dependencies ---
-Flask==3.0.3
+Flask==3.0.0
 Flask-SQLAlchemy==3.1.1
-SQLAlchemy==2.0.31
-psycopg[binary]==3.2.3
-python-dotenv==1.0.1
+psycopg2-binary
+python-dotenv==1.0.0
 gunicorn==21.2.0
-Werkzeug==3.0.4
-Jinja2==3.1.4
-itsdangerous==2.2.0
-blinker==1.9.0
-typing_extensions==4.12.2
-
-# --- Testing dependencies (used in CI/CD) ---
 pytest==7.4.3
 pytest-cov==4.1.0
 pytest-mock==3.12.0
