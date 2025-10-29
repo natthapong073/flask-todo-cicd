@@ -15,15 +15,14 @@ def create_app(config_name=None):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
-    # Enable CORS for GitHub Pages
+    # ✅ Enable CORS for GitHub Pages + Local Development
     CORS(app, resources={
         r"/api/*": {
             "origins": [
-                "http://localhost:3000",
-                "http://localhost:5000",
-                "https://petchauisui.github.io",
-                "https://petchauisui.github.io/todo-frontend",
-                "https://flask-todo-app-90g0.onrender.com"
+                "http://localhost:3000",          # Frontend (Next.js) local
+                "http://localhost:5000",          # Backend local
+                "https://*.github.io",            # Wildcard for all GitHub Pages
+                "https://natthapong073.github.io" # ✅ Your GitHub Pages domain
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type"],
@@ -31,9 +30,11 @@ def create_app(config_name=None):
         }
     })
 
+    # ✅ Initialize database and register routes
     db.init_app(app)
     app.register_blueprint(api, url_prefix='/api')
 
+    # ✅ Default route
     @app.route('/')
     def index():
         return jsonify({
@@ -45,6 +46,7 @@ def create_app(config_name=None):
             }
         })
 
+    # ✅ Error handlers
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({
@@ -69,6 +71,7 @@ def create_app(config_name=None):
             'error': 'Internal server error'
         }), 500
 
+    # ✅ Create all tables if not exist
     with app.app_context():
         db.create_all()
 
