@@ -1,42 +1,33 @@
-# Build stage
-FROM python:3.11-slim as builder
+# ✅ ใช้ Python เวอร์ชันเดียวกันทั้งสองขั้น
+FROM python:3.11-slim
 
+# Set working directory
 WORKDIR /app
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy and install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Runtime stage
-FROM python:3.10
+# Copy app source code
+COPY . .
 
-RUN useradd -m -u 1000 appuser
-
-WORKDIR /app
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=builder /root/.local /home/appuser/.local
-COPY --chown=appuser:appuser . .
-
-ENV PATH=/home/appuser/.local/bin:$PATH \
-    PYTHONUNBUFFERED=1 \
-    FLASK_APP=run.py
-
-USER appuser
-
-# ✅ แก้ตรงนี้: ใช้ Render PORT (ไม่ fix 5000)
+# Expose port
 EXPOSE 5000
 
-# ✅ แก้ Healthcheck ให้ใช้ $PORT
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests, os; requests.get(f'http://localhost:{os.environ.get(\"PORT\",5000)}/api/health')" || exit 1
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    FLASK_APP=run.py \
+    PATH=/usr/local/bin:$PATH
 
-# ✅ แก้ตรงนี้! ใช้ dynamic port จาก Render
-CMD ["gunicorn", "--bind", "0.0.0.0:${PORT:-5000}", "--workers", "4", "--timeout", "120", "run:app"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:5000/api/health')" || exit 1
+
+# ✅ Use $PORT (important for Railway)
+CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "--workers", "4", "--timeout", "120", "run:app"]
