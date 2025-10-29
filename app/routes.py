@@ -129,8 +129,6 @@ def update_todo(todo_id):
         return jsonify({"success": False, "error": f"Database error: {str(e)}"}), 500
 
 
-
-
 @api.route("/todos/<int:todo_id>", methods=["DELETE"])
 def delete_todo(todo_id):
     """Delete a todo item"""
