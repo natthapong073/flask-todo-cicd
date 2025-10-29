@@ -1,13 +1,16 @@
+version: "3.9"
+
 services:
   db:
     image: postgres:16-alpine
     container_name: todo_postgres
+    restart: always
     environment:
       POSTGRES_DB: todo_dev
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"  # 👈 เปลี่ยนให้ไม่ชนกับ Postgres อื่นในเครื่อง
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,20 +26,22 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: todo_app
-    environment:
-      FLASK_ENV: development
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/todo_dev
-      SECRET_KEY: dev-secret-key-12345
-    ports:
-      - "9999:5000"
+    restart: always
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      FLASK_ENV: development
+      # ✅ ใช้ psycopg driver ที่รองรับ SQLAlchemy 2.x
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/todo_dev
+      SECRET_KEY: dev-secret-key-12345
+    ports:
+      - "9999:5000"  # เข้าถึง Flask ได้ผ่าน http://localhost:9999
     volumes:
       - .:/app
     networks:
       - app_network
-    command: flask run --host=0.0.0.0
+    command: flask run --host=0.0.0.0 --port=5000
 
 volumes:
   postgres_data:
