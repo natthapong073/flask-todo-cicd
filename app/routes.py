@@ -90,8 +90,8 @@ def update_todo(todo_id):
     data = request.get_json() or {}
 
     try:
-        # ✅ ครอบ query ด้วย try เผื่อ mock commit กระทบ session
-        todo = Todo.query.get(todo_id)
+        # ✅ ย้ายเข้ามาใน try เพื่อจับ error ได้ครบ (รวมถึง mock error)
+        todo = db.session.get(Todo, todo_id)  # ใช้ .get() แทน .query.get() (modern SQLAlchemy)
         if not todo:
             return jsonify({"success": False, "error": "Todo not found"}), 404
 
@@ -102,7 +102,7 @@ def update_todo(todo_id):
         if "completed" in data:
             todo.completed = data["completed"]
 
-        # ✅ จุดที่ test mock error
+        # ✅ จุดที่ mock SQLAlchemyError
         db.session.commit()
 
         return (
@@ -116,10 +116,11 @@ def update_todo(todo_id):
             200,
         )
 
-    except SQLAlchemyError:
-        # ✅ ดักได้ทุกกรณี mock commit / query ล้ม
+    except SQLAlchemyError as e:
+        # ✅ ดัก commit/query ทุกกรณี
         db.session.rollback()
-        return jsonify({"success": False, "error": "Database error"}), 500
+        return jsonify({"success": False, "error": f"Database error: {str(e)}"}), 500
+
 
 
 @api.route("/todos/<int:todo_id>", methods=["DELETE"])
