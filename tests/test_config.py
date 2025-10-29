@@ -1,7 +1,6 @@
 import pytest
 import os
-from app.config import Config, DevelopmentConfig, TestingConfig, ProductionConfig, config_map as config
-
+from app.config import Config, DevelopmentConfig, TestingConfig, ProductionConfig, config
 
 class TestConfig:
     """Test base configuration"""
