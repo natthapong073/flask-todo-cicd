@@ -15,14 +15,32 @@ def create_app(config_name=None):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
+    # ✅ Check environment for Database URL (Railway / Local)
+    db_url = os.getenv("DATABASE_URL")
+    if db_url:
+        # Railway ให้ URL ที่ขึ้นต้นด้วย postgres:// ต้องแก้เป็น postgresql://
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+        elif db_url.startswith("postgresql://"):
+            db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+
+        app.config["SQLALCHEMY_DATABASE_URI"] = db_url
+    else:
+        # ✅ Fallback local (ถ้าไม่มี DATABASE_URL ใน env)
+        app.config["SQLALCHEMY_DATABASE_URI"] = (
+            "postgresql+psycopg://testuser:testpass@localhost:5433/testdb"
+        )
+
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
     # ✅ Enable CORS for GitHub Pages + Local Development
     CORS(app, resources={
         r"/api/*": {
             "origins": [
-                "http://localhost:3000",          # Frontend (Next.js) local
-                "http://localhost:5000",          # Backend local
-                "https://*.github.io",            # Wildcard for all GitHub Pages
-                "https://natthapong073.github.io"  # ✅ Your GitHub Pages domain
+                "http://localhost:3000",
+                "http://localhost:5000",
+                "https://*.github.io",
+                "https://natthapong073.github.io"
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type"],
