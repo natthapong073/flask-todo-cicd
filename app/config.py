@@ -43,13 +43,19 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     """Production configuration"""
     DEBUG = False
-    # ✅ ถ้า Render มี DATABASE_URL แล้ว ก็จะเป็นแบบ psycopg ด้วย
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+
+    # ✅ Force psycopg3 driver even if Render gives psycopg2-style URL
+    raw_db_url = os.getenv("DATABASE_URL", "")
+    if raw_db_url.startswith("postgres://"):
+        raw_db_url = raw_db_url.replace("postgres://", "postgresql+psycopg://")
+    elif raw_db_url.startswith("postgresql://") and "+psycopg" not in raw_db_url:
+        raw_db_url = raw_db_url.replace("postgresql://", "postgresql+psycopg://")
+
+    SQLALCHEMY_DATABASE_URI = raw_db_url
 
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
-        # ✅ ตรวจให้แน่ใจว่ามี DATABASE_URL
         assert os.getenv("DATABASE_URL"), "DATABASE_URL must be set in production"
 
 
