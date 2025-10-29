@@ -2,20 +2,26 @@ import os
 from flask import Flask, jsonify
 from app.models import db
 from app.routes import api
-from app.config import config_map  # ✅ เปลี่ยนจาก config → config_map
+from app.config import config_map  # ✅ ใช้ config_map จาก config.py
 
 
 def create_app(config_name=None):
     """Application factory pattern"""
+    # ✅ ตรวจค่าการทำงานเริ่มต้น
     if config_name is None:
-        # ใช้ค่าเริ่มต้นจากตัวแปรสภาพแวดล้อม
         config_name = os.getenv("FLASK_ENV", "development")
 
     app = Flask(__name__)
 
-    # ✅ โหลด config จาก config_map
-    app.config.from_object(config_map[config_name])
-    config_map[config_name].init_app(app)
+    # ✅ แก้ Render issue: DATABASE_URL ยังเป็น driver เก่า (postgresql://)
+    if os.getenv("DATABASE_URL") and "psycopg" not in os.getenv("DATABASE_URL"):
+        fixed_url = os.getenv("DATABASE_URL").replace("postgres://", "postgresql+psycopg://")
+        fixed_url = fixed_url.replace("postgresql://", "postgresql+psycopg://")
+        os.environ["DATABASE_URL"] = fixed_url
+
+    # ✅ โหลด config
+    app.config.from_object(config_map.get(config_name, config_map["default"]))
+    config_map.get(config_name, config_map["default"]).init_app(app)
 
     # ✅ เชื่อมต่อฐานข้อมูล
     db.init_app(app)
