@@ -131,3 +131,4 @@ def delete_todo(todo_id):
     except SQLAlchemyError:
         db.session.rollback()
         return jsonify({"success": False, "error": "Failed to delete todo"}), 500
+    
