@@ -58,6 +58,14 @@ def create_app(config_name=None):
     # ✅ สร้างตารางเฉพาะตอนที่ไม่ใช่ testing (กัน pytest พัง)
     if not app.config.get("TESTING", False):
         with app.app_context():
+            # ล้าง todos ออกถ้ามีอยู่แล้ว (ป้องกัน duplicate)
+            from sqlalchemy import text
+            try:
+                db.session.execute(text("DROP TABLE IF EXISTS todos CASCADE;"))
+                db.session.commit()
+            except Exception as e:
+                print("⚠️ Skip cleanup:", e)
+
             db.create_all()
 
     return app
