@@ -33,3 +33,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 4 --timeout 120 run:app"]
 
 
+
