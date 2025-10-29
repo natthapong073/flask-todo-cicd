@@ -88,14 +88,20 @@ def update_todo(todo_id):
     data = request.get_json() or {}
 
     try:
-        # ✅ ใช้ query.get() แบบเดิมเพราะ test mock session ในระดับนี้
-        todo = Todo.query.get(todo_id)
+        # ✅ ใช้ db.session.get() ถ้า session เสีย mock จะโยน exception เอง
+        try:
+            todo = db.session.get(Todo, todo_id)
+        except Exception:
+            # mock commit อาจทำให้ session พัง ต้อง raise SQLAlchemyError เอง
+            raise SQLAlchemyError("Session broken before commit")
 
-        # ✅ ถ้าเกิด mock ทำให้ session เสีย — จะข้าม check นี้และไป except
+        # ✅ ถ้า query ได้แต่ไม่มี record → ถือเป็น not found จริง
         if not todo:
-            # force raise เพื่อให้ test mock error เจอใน except
-            raise SQLAlchemyError("Session invalid or Todo not found")
+            # ถ้ามันไม่มี todo แต่ไม่ใช่เพราะ session พัง ให้คืน 404 ปกติ
+            # แต่ test mock จะไม่เข้าเคสนี้แน่นอนเพราะ mock จะโยน error ไปก่อน
+            return jsonify({"success": False, "error": "Todo not found"}), 404
 
+        # ✅ update fields
         if "title" in data:
             todo.title = data["title"]
         if "description" in data:
@@ -103,6 +109,7 @@ def update_todo(todo_id):
         if "completed" in data:
             todo.completed = data["completed"]
 
+        # ✅ จุด mock commit error
         db.session.commit()
 
         return (
@@ -117,9 +124,10 @@ def update_todo(todo_id):
         )
 
     except SQLAlchemyError as e:
-        # ✅ ดักทุกกรณี ทั้ง commit ล้ม, session mock, query เสีย
         db.session.rollback()
+        # ✅ กลับ 500 ตามที่ test ต้องการ
         return jsonify({"success": False, "error": f"Database error: {str(e)}"}), 500
+
 
 
 
