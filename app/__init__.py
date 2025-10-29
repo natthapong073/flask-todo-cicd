@@ -22,7 +22,7 @@ def create_app(config_name=None):
                 "http://localhost:3000",          # Frontend (Next.js) local
                 "http://localhost:5000",          # Backend local
                 "https://*.github.io",            # Wildcard for all GitHub Pages
-                "https://natthapong073.github.io" # ✅ Your GitHub Pages domain
+                "https://natthapong073.github.io"  # ✅ Your GitHub Pages domain
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type"],
