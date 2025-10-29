@@ -20,7 +20,9 @@ class DevelopmentConfig(Config):
     """Development configuration"""
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URL", "postgresql://postgres:postgres@db:5432/todo_dev"
+        # ✅ เปลี่ยนให้ใช้ psycopg driver (รองรับ Python 3.13)
+        "DATABASE_URL",
+        "postgresql+psycopg://postgres:postgres@db:5432/todo_dev"
     )
 
 
@@ -41,6 +43,7 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     """Production configuration"""
     DEBUG = False
+    # ✅ ถ้า Render มี DATABASE_URL แล้ว ก็จะเป็นแบบ psycopg ด้วย
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
 
     @classmethod
