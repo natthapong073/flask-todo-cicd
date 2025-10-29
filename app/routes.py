@@ -13,6 +13,7 @@ def health_check():
         db.session.execute(db.text("SELECT 1"))
         return jsonify({"status": "healthy", "database": "connected"}), 200
     except Exception:
+        db.session.rollback()
         return (
             jsonify(
                 {
@@ -29,7 +30,6 @@ def health_check():
 def get_todos():
     """Get all todo items"""
     try:
-        # ✅ เรียงจากใหม่ไปเก่าโดยใช้ id แทน created_at เพื่อให้ test ผ่านแน่นอน
         todos = Todo.query.order_by(Todo.id.desc()).all()
         return (
             jsonify(
@@ -49,10 +49,9 @@ def get_todos():
 @api.route("/todos/<int:todo_id>", methods=["GET"])
 def get_todo(todo_id):
     """Get a specific todo item"""
-    todo = Todo.query.get(todo_id)
+    todo = db.session.get(Todo, todo_id)
     if not todo:
         return jsonify({"success": False, "error": "Todo not found"}), 404
-
     return jsonify({"success": True, "data": todo.to_dict()}), 200
 
 
@@ -68,7 +67,6 @@ def create_todo():
         todo = Todo(title=data["title"], description=data.get("description", ""))
         db.session.add(todo)
         db.session.commit()
-
         return (
             jsonify(
                 {
@@ -90,8 +88,8 @@ def update_todo(todo_id):
     data = request.get_json() or {}
 
     try:
-        # ✅ ย้ายเข้ามาใน try เพื่อจับ error ได้ครบ (รวมถึง mock error)
-        todo = db.session.get(Todo, todo_id)  # ใช้ .get() แทน .query.get() (modern SQLAlchemy)
+        # ✅ อยู่ใน try ครอบคลุมทุกกรณี mock commit / query ล้ม
+        todo = db.session.get(Todo, todo_id)
         if not todo:
             return jsonify({"success": False, "error": "Todo not found"}), 404
 
@@ -102,9 +100,7 @@ def update_todo(todo_id):
         if "completed" in data:
             todo.completed = data["completed"]
 
-        # ✅ จุดที่ mock SQLAlchemyError
         db.session.commit()
-
         return (
             jsonify(
                 {
@@ -117,23 +113,20 @@ def update_todo(todo_id):
         )
 
     except SQLAlchemyError as e:
-        # ✅ ดัก commit/query ทุกกรณี
         db.session.rollback()
         return jsonify({"success": False, "error": f"Database error: {str(e)}"}), 500
-
 
 
 @api.route("/todos/<int:todo_id>", methods=["DELETE"])
 def delete_todo(todo_id):
     """Delete a todo item"""
-    todo = Todo.query.get(todo_id)
+    todo = db.session.get(Todo, todo_id)
     if not todo:
         return jsonify({"success": False, "error": "Todo not found"}), 404
 
     try:
         db.session.delete(todo)
         db.session.commit()
-
         return jsonify({"success": True, "message": "Todo deleted successfully"}), 200
     except SQLAlchemyError:
         db.session.rollback()
