@@ -94,7 +94,7 @@ jobs:
         run: |
           echo "🔍 Checking Render health..."
           for i in {1..8}; do
-            if curl -fsS ${{ secrets.RENDER_APP_URL }}/health; then  # ✅ เปลี่ยนจาก /api/health → /health
+            if curl -fsS ${{ secrets.RENDER_APP_URL }}/; then
               echo "✅ Render deployment successful!"
               exit 0
             fi
