@@ -36,7 +36,7 @@ services:
       DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/todo_dev
       SECRET_KEY: dev-secret-key-12345
     ports:
-      - "9999:5000"  # เข้าถึง Flask ได้ผ่าน http://localhost:9999
+      - "5000:5000"  # เข้าถึง Flask ได้ผ่าน http://localhost:9999
     volumes:
       - .:/app
     networks:

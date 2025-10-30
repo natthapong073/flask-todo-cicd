@@ -28,8 +28,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy dependencies from builder
 COPY --from=builder /root/.local /home/appuser/.local
 
-# Copy app source code
+# ✅ Copy app source code
 COPY --chown=appuser:appuser . .
+
+# ✅ เพิ่มบรรทัดนี้ เพื่อให้ swagger.json ถูกคัดลอกเข้า container ด้วย
+COPY --chown=appuser:appuser app/static ./app/static
 
 # Environment setup
 ENV PATH=/home/appuser/.local/bin:$PATH \
