@@ -122,17 +122,18 @@ jobs:
           railway up --detach
       
       - name: Wait for deployment
-        run: sleep 60
+        run: sleep 120   # จากเดิม 60 เพิ่มเป็น 120 วิ
 
       - name: Health check
         run: |
-          for i in {1..5}; do
-            if curl -f ${{ secrets.RAILWAY_APP_URL }}/api/health; then
-              echo "Railway deployment successful!"
+          for i in {1..8}; do   # จากเดิม 5 รอบ เพิ่มเป็น 8
+            if curl -fsS ${{ secrets.RENDER_APP_URL }}/api/health; then
+              echo "Deployment successful!"
               exit 0
             fi
             echo "Attempt $i failed, retrying..."
-            sleep 10
+            sleep 15            # รอแต่ละรอบ 15 วิ
           done
-          echo "Railway deployment health check failed"
+          echo "Deployment health check failed"
           exit 1
+
