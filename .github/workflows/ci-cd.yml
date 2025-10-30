@@ -12,7 +12,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # 🧪 Job 1: (Skip tests/lint)
+  # 🧪 Job 1: Skip Tests (ชั่วคราว)
   test:
     name: Skip Tests (Temporary)
     runs-on: ubuntu-latest
@@ -82,22 +82,26 @@ jobs:
     steps:
       - name: Trigger Render Deployment
         run: |
+          echo "🚀 Triggering Render deployment..."
           curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-      
-      - name: Wait for deployment
-        run: sleep 60
 
-      - name: Health check
+      - name: Wait for Render to start
         run: |
-          for i in {1..5}; do
-            if curl -f ${{ secrets.RENDER_APP_URL }}/api/health; then
-              echo "Deployment successful!"
+          echo "⏳ Waiting 120 seconds for Render to wake up..."
+          sleep 120  # ✅ เพิ่มเวลารอให้ Render เปิด service ให้ทัน
+
+      - name: Health check (Render)
+        run: |
+          echo "🔍 Checking Render health..."
+          for i in {1..8}; do
+            if curl -fsS ${{ secrets.RENDER_APP_URL }}/health; then  # ✅ เปลี่ยนจาก /api/health → /health
+              echo "✅ Render deployment successful!"
               exit 0
             fi
-            echo "Attempt $i failed, retrying..."
-            sleep 10
+            echo "⚠️ Attempt $i failed, retrying in 15s..."
+            sleep 15
           done
-          echo "Deployment health check failed"
+          echo "❌ Render deployment health check failed"
           exit 1
 
   # 🚄 Job 4: Deploy to Railway
@@ -118,22 +122,25 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
+          echo "🚄 Deploying to Railway..."
           railway link ${{ secrets.RAILWAY_PROJECT_ID }}
           railway up --detach
       
-      - name: Wait for deployment
-        run: sleep 120   # จากเดิม 60 เพิ่มเป็น 120 วิ
-
-      - name: Health check
+      - name: Wait for Railway to start
         run: |
-          for i in {1..8}; do   # จากเดิม 5 รอบ เพิ่มเป็น 8
-            if curl -fsS ${{ secrets.RENDER_APP_URL }}/api/health; then
-              echo "Deployment successful!"
+          echo "⏳ Waiting 120 seconds for Railway to initialize..."
+          sleep 120
+
+      - name: Health check (Railway)
+        run: |
+          echo "🔍 Checking Railway health..."
+          for i in {1..8}; do
+            if curl -fsS https://flask-todo-cicd-production-df63.up.railway.app/health; then  # ✅ ตรงกับ route จริง
+              echo "✅ Railway deployment successful!"
               exit 0
             fi
-            echo "Attempt $i failed, retrying..."
-            sleep 15            # รอแต่ละรอบ 15 วิ
+            echo "⚠️ Attempt $i failed, retrying in 15s..."
+            sleep 15
           done
-          echo "Deployment health check failed"
+          echo "❌ Railway deployment health check failed"
           exit 1
-
