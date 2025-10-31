@@ -99,13 +99,13 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Login to Railway
+      - name: Login to Railway (via env)
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          echo "🔐 Logging into Railway..."
+          echo "🔐 Authenticating Railway via env variable..."
           export RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN }}
-          railway whoami || echo "✅ Logged in via token"
+          railway whoami || echo "✅ Token set, continuing..."
 
       - name: Deploy to Railway
         env:
@@ -113,7 +113,7 @@ jobs:
         run: |
           echo "🔗 Linking to Railway project..."
           railway link --project $RAILWAY_PROJECT_ID
-          echo "🚀 Deploying to Railway..."
+          echo "🚀 Deploying..."
           railway up --detach
 
       - name: Health Check
