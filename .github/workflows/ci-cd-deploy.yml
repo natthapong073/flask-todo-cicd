@@ -82,14 +82,12 @@ jobs:
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
         run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "⚠️ Missing RAILWAY_TOKEN secret"
-            exit 1
-          fi
-          railway link ${{ secrets.RAILWAY_PROJECT_ID }}
+          echo "🔗 Linking to Railway Project..."
+          railway link --project $RAILWAY_PROJECT_ID
+          echo "🚀 Deploying to Railway..."
           railway up --detach
-          echo "✅ Railway deploy triggered!"
 
       - name: Verify deployment (optional)
         run: |
